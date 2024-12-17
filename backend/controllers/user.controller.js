@@ -35,6 +35,31 @@ const userRegister = async (req, res, next) => {
     }
 };
 
+//Login 
+
+const userLogin = async (req,res,next)=>{
+     try {
+        const {email, password} = req.body;
+        const user = await userModel.findOne({email}).select('+password');
+
+        if(!user){
+            res.status(402).json({msg:"Invalid Credentials"})
+        }
+
+        const isMatch = await user.comparePassword(password);
+
+        if(!isMatch){
+            res.status(402).json({msg:"Invalid Credentials"})
+        }
+
+        const token = await user.generateAutoToken();
+
+        res.status(200).json({user,token})
+     } catch (error) {
+        
+     }
+}
 module.exports = {
-    userRegister
+    userRegister,
+    userLogin
 };

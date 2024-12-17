@@ -12,7 +12,7 @@ const authUser = async(req,res,next)=>{
       const decode = jwt.verify(token,process.env.JWTToken);
       const user = await userModel.findById(decode._id,decode.email);
       req.user = user;
-      next();
+      return next();
    } catch (error) {
      console.log(error);
      
