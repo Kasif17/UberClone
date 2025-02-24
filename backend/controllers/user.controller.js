@@ -1,9 +1,16 @@
 const userService = require('../services/user.service');
 const userModel = require('../models/user.model');
+const blacklistTokenModel = require('../models/blacklistToken.model')
 
 const userRegister = async (req, res, next) => {
     try {
         const { fullName, email, password } = req.body;
+
+        const isUserAlreadyExits = await userModel.findOne({email});
+   
+        if(isUserAlreadyExits){
+           return res.status(400).json({massege:'User Already Exits'})
+        }
          console.log(req.body);
          
         // Hash the password
@@ -53,13 +60,30 @@ const userLogin = async (req,res,next)=>{
         }
 
         const token = await user.generateAutoToken();
-
+        res.cookie('token',token);
         res.status(200).json({user,token})
      } catch (error) {
         
      }
 }
+
+//profile 
+
+const userProfile = async (req,res)=>{
+     res.status(200).json(req.user)
+}
+
+//logout 
+
+const userLogout = async(req,res,next)=>{
+    res.clearCookie('token');
+    const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
+   await blacklistTokenModel.create({token})
+    res.status(201).json({msg:"User Logout Successfully "})
+}
 module.exports = {
     userRegister,
-    userLogin
+    userLogin,
+    userProfile,
+    userLogout
 };
